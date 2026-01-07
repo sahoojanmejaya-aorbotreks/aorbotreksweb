@@ -1,0 +1,353 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ trek.name }} | Aorbo Treks{% endblock %}
+
+{% block content %}
+<section class="py-5 mt-4">
+  <div class="container">
+
+    <div class="row g-4">
+
+      <!-- ================= HERO TREK IMAGE ================= -->
+      <div class="col-12 col-md-6">
+        {% with trek.images.first as hero %}
+          {% if hero and hero.image_url %}
+            <img src="{{ hero.image_url }}"
+                 alt="{{ trek.name }}"
+                 class="img-fluid rounded-3 shadow-sm w-100">
+          {% else %}
+            <img src="{% static 'images/placeholder.jpg' %}"
+                 alt="No image"
+                 class="img-fluid rounded-3 shadow-sm w-100">
+          {% endif %}
+        {% endwith %}
+
+        <!-- ================= IMAGE GALLERY ================= -->
+        {% if trek.images.all|length > 1 %}
+          <div class="d-flex gap-2 mt-3 flex-wrap">
+            {% for img in trek.images.all %}
+              {% if img.image_url %}
+                <img src="{{ img.image_url }}"
+                     alt="{{ img.caption }}"
+                     class="rounded shadow-sm gallery-thumb">
+              {% endif %}
+            {% endfor %}
+          </div>
+        {% endif %}
+      </div>
+
+      <!-- ================= TREK DETAILS ================= -->
+      <div class="col-12 col-md-6">
+
+        <h1 class="mb-2 trek-name">{{ trek.name }}</h1>
+
+        {% if trek.state %}
+          <p class="text-muted mb-1">📍 {{ trek.state }}</p>
+        {% endif %}
+
+        {% if trek.duration_days %}
+          <p class="mb-1"><strong>Duration:</strong> {{ trek.duration_days }}</p>
+        {% endif %}
+
+        {% if trek.operating_days %}
+          <p class="mb-1"><strong>Operating Days:</strong> {{ trek.operating_days }}</p>
+        {% endif %}
+
+        {% if trek.price_start %}
+          <p class="mb-3">
+            <strong>Price:</strong>
+            <span class="fw-semibold text-danger">₹{{ trek.price_start }}</span> onwards
+          </p>
+        {% endif %}
+
+        <!-- ================= OPERATORS ================= -->
+        {% if trek.operators.exists %}
+          <h5 class="mt-3">Operators</h5>
+          <ul>
+            {% for operator in trek.operators.all %}
+              <li>{{ operator }}</li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+
+        <!-- ================= SHORT DESCRIPTION ================= -->
+        {% if trek.short_desc %}
+          <p class="mt-3">{{ trek.short_desc }}</p>
+        {% endif %}
+
+        <!-- ================= TREK POINTS ================= -->
+        {% if trek.trek_points.exists %}
+          <h5 class="mt-3">Trek Points</h5>
+          <ul>
+            {% for point in trek.trek_points.all %}
+              <li>{{ point }}</li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+
+        <!-- ================= ACTIVITIES ================= -->
+        {% if trek.activities %}
+          <h5 class="mt-3">Activities</h5>
+          <p>{{ trek.activities }}</p>
+        {% endif %}
+
+        <!-- ================= RELATED TREKS ================= -->
+        {% if trek.related_treks.exists %}
+          <h5 class="mt-4">Related Treks</h5>
+          <div class="d-flex flex-wrap gap-2">
+            {% for related in trek.related_treks.all %}
+              <a href="{% url 'card_trek_detail' related.id %}"
+                 class="badge bg-light text-dark border text-decoration-none px-3 py-2 related-trek-badge">
+                {{ related.name }}
+              </a>
+            {% endfor %}
+          </div>
+        {% endif %}
+
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= STYLES ================= -->
+<style>
+.trek-name {
+  font-size: 42px;
+  font-weight: 700;
+}
+
+.gallery-thumb {
+  width: 90px;
+  height: 70px;
+  object-fit: cover;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.gallery-thumb:hover {
+  transform: scale(1.05);
+}
+
+.related-trek-badge:hover {
+  background-color: #ff6a1a !important;
+  color: white !important;
+  border-color: #ff6a1a !important;
+  transition: 0.25s ease;
+}
+</style>
+{% endblock %}
+
+
+{% comment %} 
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ trek.name }} | Aorbo Treks{% endblock %}
+
+{% block content %}
+<section class="py-5 mt-4">
+  <div class="container">
+
+    <div class="row g-4">
+
+      <!-- Trek Image -->
+      <div class="col-12 col-md-6">
+        {% if trek.image_url %}
+          <img src="{{ trek.image_url }}"
+               alt="{{ trek.name }}"
+               class="img-fluid rounded-3 shadow-sm">
+        {% else %}
+          <img src="{% static 'images/placeholder.jpg' %}"
+               alt="No image"
+               class="img-fluid rounded-3 shadow-sm">
+        {% endif %}
+      </div>
+
+      <!-- Trek Details -->
+      <div class="col-12 col-md-6">
+
+        <h1 class="mb-2 trek-name">{{ trek.name }}</h1>
+
+        {% if trek.state %}
+          <p class="text-muted mb-1">📍 {{ trek.state }}</p>
+        {% endif %}
+
+        {% if trek.duration_days %}
+          <p class="mb-1"><strong>Duration:</strong> {{ trek.duration_days }}</p>
+        {% endif %}
+
+        {% if trek.operating_days %}
+          <p class="mb-1"><strong>Operating days:</strong> {{ trek.operating_days }}</p>
+        {% endif %}
+
+        {% if trek.price_start %}
+          <p class="mb-3">
+            <strong>Price:</strong>
+            <span class="fw-semibold text-danger">₹{{ trek.price_start }}</span> onwards
+          </p>
+        {% endif %}
+
+        <!-- Operators (ManyToMany) -->
+        {% if trek.operators.all %}
+          <p class="mt-3"><strong>Operators</strong></p>
+          <ul>
+            {% for operator in trek.operators.all %}
+              <li>{{ operator }}</li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+
+        <!-- Short Description -->
+        {% if trek.short_desc %}
+          <p class="mb-3">{{ trek.short_desc }}</p>
+        {% endif %}
+
+        <!-- Trek Points (ManyToMany) -->
+        {% if trek.trek_points.all %}
+          <h5 class="mt-3">Trek Points</h5>
+          <ul>
+            {% for point in trek.trek_points.all %}
+              <li>{{ point }}</li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+
+        <!-- Activities (TextField) -->
+        {% if trek.activities %}
+          <h5 class="mt-3">Activities</h5>
+          <p>{{ trek.activities }}</p>
+        {% endif %}
+
+        <!-- Related Treks (ManyToMany to self) -->
+        {% if trek.related_treks.all %}
+          <h5 class="mt-3">Related Treks</h5>
+          <div class="d-flex flex-wrap gap-2">
+            {% for related in trek.related_treks.all %}
+              <a href="{% url 'card_trek_detail' related.id %}"
+                 class="badge bg-light text-dark border text-decoration-none px-3 py-2 related-trek-badge">
+                {{ related.name }}
+              </a>
+            {% endfor %}
+          </div>
+        {% endif %}
+
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+.related-trek-badge:hover {
+  background-color: #ff6a1a !important;
+  color: white !important;
+  border-color: #ff6a1a !important;
+  cursor: pointer;
+  transition: 0.25s ease;
+}
+.trek-name {
+  font-size: 42px !important;
+}
+</style>
+{% endblock %} {% endcomment %}
+
+{% comment %} {# templates/card_details.html #}
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ trek.name }} | Aorbo Treks{% endblock %}
+
+{% block content %}
+<section class="py-5 mt-4">
+  <div class="container">
+
+    <!-- Buttons -->
+    <!-- <div class="d-flex gap-2 mb-4 mt-4">
+      <a href="{% url 'home' %}" class="btn btn-primary">
+        🏠 Home
+      </a>
+
+      <button onclick="history.back()" class="btn btn-outline-secondary">
+        ⬅ Back
+      </button>
+    </div> -->
+
+    <div class="row g-4">
+      <div class="col-12 col-md-6">
+        <img src="{% static trek.image %}" alt="{{ trek.name }}" class="img-fluid rounded-3 shadow-sm">
+      </div>
+
+      <div class="col-12 col-md-6">
+        <h1 class="mb-2 trek-name">{{ trek.name }}</h1>
+        <p class="text-muted mb-1">📍 {{ trek.state }}</p>
+        <p class="mb-1"><strong>Duration:</strong> {{ trek.duration_days }}</p>
+
+        {% if trek.operating_days %}
+          <p class="mb-1 "><strong>Operating days:</strong> {{ trek.operating_days }}</p>
+        {% endif %}
+
+        <p class="mb-3 "><strong>Price:</strong><span class="fw-semibold text-danger ">₹{{ trek.price_start }} </span> onwards</p>
+        {% if trek.operators %}
+  <p class="mt-3"><strong>Operators</strong></p>
+  <ul>
+    {% for operator in trek.operators %}
+      <li>{{ operator }}</li>
+    {% endfor %}
+  </ul>
+{% endif %}
+
+
+        {% if trek.short_desc %}
+          <p class="mb-3">{{ trek.short_desc }}</p>
+        {% endif %}
+
+        {% if trek.Trek_Points %}
+          <h5 class="mt-3">Trek Points</h5>
+          <ul>
+            {% for point in trek.Trek_Points %}
+              <li>{{ point }}</li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+
+        {% if trek.Activities %}
+          <h5 class="mt-3">Activities</h5>
+          <ul>
+            {% for act in trek.Activities %}
+              <li>{{ act }}</li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+
+        {% if trek.Related_Treks %}
+          <h5 class="mt-3">Related Treks</h5>
+          <div class="d-flex flex-wrap gap-2">
+            {% for related_id in trek.Related_Treks %}
+              {% for t in TREKS %}
+                {% if t.id == related_id %}
+                  <a href="{% url 'card_trek_detail' t.id %}"
+                     class="badge bg-light text-dark border text-decoration-none px-3 py-2 related-trek-badge">
+                    {{ t.name }}
+                  </a>
+                {% endif %}
+              {% endfor %}
+            {% endfor %}
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</section>
+<style>
+  .related-trek-badge:hover {
+    background-color: #ff6a1a !important; /* orange */
+    color: white !important;
+    border-color: #ff6a1a !important;
+    cursor: pointer;
+    transition: 0.25s ease;
+}
+.trek-name{
+  font-size:42px!important;
+}
+</style>
+{% endblock %} {% endcomment %}

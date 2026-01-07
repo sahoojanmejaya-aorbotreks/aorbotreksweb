@@ -1,0 +1,928 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Aorbo Treks{% endblock %}
+
+{% block content %}
+
+{# ============ 1. HERO SECTION WITH FULL-SCREEN CAROUSEL ============ #}
+<section class="hero-landing p-0">
+
+    <div id="heroCarousel" class="carousel slide hero-carousel" data-bs-ride="carousel" data-bs-interval="4000">
+        <div class="carousel-inner">
+
+            <div class="carousel-item active">
+                <img src="{% static 'card/Ayodhya + Varanasi + Mathura.jpg.webp' %}"
+                     class="d-block w-100 hero-img"
+                     alt="Ayodhya + Varanasi + Mathura">
+            </div>
+
+            <div class="carousel-item">
+                <img src="{% static 'card/badrinadh.webp' %}"
+                     class="d-block w-100 hero-img"
+                     alt="Badrinath">
+            </div>
+
+            <div class="carousel-item">
+                <img src="{% static 'card/Coorg.webp' %}"
+                     class="d-block w-100 hero-img"
+                     alt="Coorg">
+            </div>
+
+        </div>
+
+        <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon"></span>
+            <span class="visually-hidden">Previous</span>
+        </button>
+
+        <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel" data-bs-slide="next">
+            <span class="carousel-control-next-icon"></span>
+            <span class="visually-hidden">Next</span>
+        </button>
+    </div>
+
+    <!-- Overlay content -->
+    <div class="hero-overlay-content">
+        <div class="text-center">
+            <div class="hero-badge mb-3">AORBO TREKS</div>
+            <h1 class="hero-heading mb-3">Discover Your Adventure.</h1>
+            <p class="hero-subtitle mb-4">
+                Search for your next trek or destination and start planning an unforgettable experience.
+            </p>
+
+            {# 🔎 SEARCH WITH DROPDOWN SUGGESTIONS #}
+            <form class="hero-search-form" method="get" action="{% url 'search_trek' %}">
+                <div class="hero-search-wrapper">
+                    <input
+                        type="text"
+                        name="q"
+                        id="hero-search-input"
+                        class="hero-search-input"
+                        placeholder="Search for a destination or trek..."
+                        autocomplete="off"
+                    >
+                    <button type="submit" class="hero-search-button" aria-label="Search">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="hero-search-icon" viewBox="0 0 24 24">
+                            <path d="M10 4a6 6 0 0 1 4.8 9.6l3.8 3.8a1 1 0 0 1-1.4 1.4l-3.8-3.8A6 6 0 1 1 10 4zm0 2a4 4 0 1 0 0 8 4 4 0 0 0 0-8z"/>
+                        </svg>
+                    </button>
+
+                    <!-- 🔽 suggestions dropdown -->
+                    <div id="search-suggestions" class="search-suggestions"></div>
+                </div>
+            </form>
+
+        </div>
+    </div>
+
+</section>
+
+
+{# ================= 2. Featured Destinations ================= #}
+<section class="py-5 bg-light" id="featured-destinations">
+  <div class="container">
+    <h2 class="text-center mb-2">Featured Destinations</h2>
+
+    {% if selected_tag %}
+      <h5 class="text-center text-secondary mb-4">
+        Showing results for:
+        <span class="text-dark fw-bold">{{ selected_tag|title }}</span>
+        <a href="{% url 'home' %}#featured-destinations"
+           class="ms-2 small text-decoration-underline">
+          Reset
+        </a>
+      </h5>
+    {% else %}
+      <p class="text-center text-muted mb-4">
+        Explore our most loved treks and travel circuits across India.
+      </p>
+    {% endif %}
+
+    <div class="row g-4" id="featured-trek-grid">
+      {% for trek in featured_treks %}
+        <div class="col-12 col-sm-6 col-md-4 col-lg-3 featured-card
+                    {% if forloop.counter > 8 %} d-none extra-trek-card{% endif %}">
+
+          <div class="card h-100 border-0 shadow-sm rounded-4">
+
+            {# === Trek Image === #}
+            {% comment %} <div class="ratio ratio-4x3">
+              {% if trek.image_url %}
+                <img
+                  src="{{ trek.image_url }}"
+                  alt="{{ trek.name }}"
+                  class="card-img-top object-fit-cover rounded-top-4">
+              {% else %}
+                <img
+                  src="{% static 'images/placeholder-trek.jpg' %}"
+                  alt="Trek placeholder"
+                  class="card-img-top object-fit-cover rounded-top-4">
+              {% endif %}
+            </div> {% endcomment %}
+            {# ===== IMAGE (FIXED) ===== #}
+            <div class="ratio ratio-4x3">
+            {% with trek.images.first as img %}
+            {% if img and img.image_url %}
+                <img src="{{ img.image_url }}"
+                    class="card-img-top object-fit-cover rounded-top-4"
+                    alt="{{ trek.name }}">
+            {% else %}
+                <img src="{% static 'images/placeholder-trek.jpg' %}"
+                    class="card-img-top object-fit-cover rounded-top-4"
+                    alt="Placeholder">
+            {% endif %}
+            {% endwith %}
+            </div>
+
+            <div class="card-body d-flex flex-column">
+
+              {# === Trek Name === #}
+              <h5 class="card-title mb-1">{{ trek.name }}</h5>
+
+              {# === State === #}
+              {% if trek.state %}
+                <p class="text-muted mb-2">📍 {{ trek.state }}</p>
+              {% endif %}
+
+              {# === Duration === #}
+              {% if trek.duration_days %}
+                <p class="small mb-1">⏱ {{ trek.duration_days }}</p>
+              {% endif %}
+
+              {# === Operating Days === #}
+              {% if trek.operating_days %}
+                <p class="small mb-2">📅 {{ trek.operating_days }}</p>
+              {% endif %}
+
+              {# === Price === #}
+              {% if trek.price_start %}
+                <p class="fw-semibold text-danger mb-3">
+                  {% if trek.currency == "INR" %}
+                    ₹{{ trek.price_start }}
+                  {% else %}
+                    {{ trek.currency }} {{ trek.price_start }}
+                  {% endif %}
+                  <span class="text-muted small">onwards</span>
+                </p>
+              {% else %}
+                <p class="fw-semibold text-muted mb-3">
+                  Price on request
+                </p>
+              {% endif %}
+
+              {# === CTA === #}
+              <div class="mt-auto">
+                <a href="{% url 'card_trek_detail' trek.id %}"
+                   class="btn btn-warning w-100 fw-semibold">
+                  View Details
+                </a>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+      {% empty %}
+        <div class="col-12">
+          <p class="text-center text-muted">
+            No treks found for this filter.
+            <a href="{% url 'home' %}#featured-destinations">Reset filters</a>
+          </p>
+        </div>
+      {% endfor %}
+    </div>
+
+    {% if featured_treks|length > 8 %}
+      <div class="text-center mt-4">
+        <button id="toggle-featured-treks"
+                class="btn btn-outline-dark px-4 py-2 fw-semibold">
+          View More
+        </button>
+      </div>
+    {% endif %}
+  </div>
+</section>
+
+
+
+{# ============ 3. TRAVEL YOUR WAY SECTION ============ #}
+<section class="travel-your-way py-5">
+    <div class="container text-center">
+        <h2 class="tyw-title mb-3">Travel Your Way</h2>
+        <p class="tyw-subtitle mb-4">
+            Whether you seek adventure, peace, or a quick weekend escape,
+            find the journey that fits your style.
+        </p>
+
+        <div class="row g-4 justify-content-center mt-3">
+            <div class="col-12 col-md-6 col-lg-4 d-flex">
+                <a href="{% url 'travel_your_way' %}?tag=adventure" class="tyw-card-link w-100">
+                    <div class="tyw-card">
+                        <div class="tyw-icon icon-adventure">⛰️</div>
+                        <h3 class="tyw-card-title">Adventure Treks</h3>
+                        <p class="tyw-card-text">
+                            For thrill-seekers and explorers who crave a challenge.
+                        </p>
+                    </div>
+                </a>
+            </div>
+
+            <div class="col-12 col-md-6 col-lg-4 d-flex">
+                <a href="{% url 'travel_your_way' %}?tag=weekend" class="tyw-card-link w-100">
+                    <div class="tyw-card">
+                        <div class="tyw-icon icon-weekend">☀️</div>
+                        <h3 class="tyw-card-title">Weekend Getaways</h3>
+                        <p class="tyw-card-text">
+                            Perfect short escapes to unwind and recharge.
+                        </p>
+                    </div>
+                </a>
+            </div>
+
+            <div class="col-12 col-md-6 col-lg-4 d-flex">
+                <a href="{% url 'travel_your_way' %}?tag=nature" class="tyw-card-link w-100">
+                    <div class="tyw-card">
+                        <div class="tyw-icon icon-nature">🌲</div>
+                        <h3 class="tyw-card-title">Nature Escapes</h3>
+                        <p class="tyw-card-text">
+                            Reconnect with nature through calm and scenic trails.
+                        </p>
+                    </div>
+                </a>
+            </div>
+
+            <div class="col-12 col-md-6 col-lg-4 d-flex">
+                <a href="{% url 'travel_your_way' %}?tag=beach" class="tyw-card-link w-100">
+                    <div class="tyw-card">
+                        <div class="tyw-icon icon-beach">🌊</div>
+                        <h3 class="tyw-card-title">Beach Trails</h3>
+                        <p class="tyw-card-text">
+                            Walk along the coast, enjoy sunsets, and feel the sea breeze.
+                        </p>
+                    </div>
+                </a>
+            </div>
+
+            <div class="col-12 col-md-6 col-lg-4 d-flex">
+                <a href="{% url 'travel_your_way' %}?tag=spiritual" class="tyw-card-link w-100">
+                    <div class="tyw-card">
+                        <div class="tyw-icon icon-spiritual">💗</div>
+                        <h3 class="tyw-card-title">Spiritual Journeys</h3>
+                        <p class="tyw-card-text">
+                            Find peace and purpose through sacred trails.
+                        </p>
+                    </div>
+                </a>
+            </div>
+
+            <div class="col-12 col-md-6 col-lg-4 d-flex">
+                <a href="{% url 'travel_your_way' %}?tag=camping" class="tyw-card-link w-100">
+                    <div class="tyw-card">
+                        <div class="tyw-icon icon-camping">🏕️</div>
+                        <h3 class="tyw-card-title">Camping &amp; Bonfire</h3>
+                        <p class="tyw-card-text">
+                            Experience starlit nights and warm bonfires in the wild.
+                        </p>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+{# ============ 4. WHY TREK WITH AORBO TREKS SECTION ============ #}
+<section class="why-trek py-5">
+    <div class="container text-center">
+        <h2 class="why-title mb-3">Why Trek With AORBO TREKS?</h2>
+        <p class="why-subtitle mb-5">
+            We're more than a platform; we are your trusted partner in adventure,
+            committed to making every journey safe, seamless, and unforgettable.
+        </p>
+
+        <div class="row g-4 justify-content-center">
+            <div class="col-12 col-md-6 col-lg-3 d-flex">
+                <div class="why-card">
+                    <div class="why-icon-circle icon-local">🎯</div>
+                    <h3 class="why-card-title">Tailored Experience</h3>
+                    <p class="why-card-text">
+                        Customize your trek according to your preferences and comfort level.
+                    </p>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-6 col-lg-3 d-flex">
+                <div class="why-card">
+                    <div class="why-icon-circle icon-local">✔</div>
+                    <h3 class="why-card-title">Verified Local Operators</h3>
+                    <p class="why-card-text">
+                        Every trek is led by trusted, certified local experts who ensure your safety
+                        and provide an authentic experience.
+                    </p>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-6 col-lg-3 d-flex">
+                <div class="why-card">
+                    <div class="why-icon-circle icon-variety">⛰</div>
+                    <h3 class="why-card-title">Unmatched Trek Variety</h3>
+                    <p class="why-card-text">
+                        From serene weekend getaways to challenging Himalayan expeditions, find the
+                        perfect trail for your adventure style.
+                    </p>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-6 col-lg-3 d-flex">
+                <div class="why-card">
+                    <div class="why-icon-circle icon-community">👥</div>
+                    <h3 class="why-card-title">Community &amp; Support</h3>
+                    <p class="why-card-text">
+                        Join a community of passionate adventurers with 24/7* support from a team
+                        that lives and breathes the outdoors.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}
+
+
+{% block extra_css %}
+<style>
+/* ============= HERO SECTION WITH FULL-SCREEN CAROUSEL ============= */
+
+.hero-landing {
+    position: relative;
+    width: 100%;
+    margin-bottom: 0;
+}
+
+.hero-carousel,
+.hero-carousel .carousel-inner,
+.hero-carousel .carousel-item {
+    height: 100%;
+}
+
+.hero-carousel .hero-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Overlay with centered content */
+.hero-overlay-content {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    background: linear-gradient(
+        120deg,
+        rgba(0, 0, 0, 0.55),
+        rgba(0, 0, 0, 0.25),
+        rgba(0, 0, 0, 0.65)
+    );
+}
+
+/* Hero text & search */
+.hero-heading {
+    font-size: clamp(2.4rem, 4vw, 3.4rem);
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: 0.02em;
+}
+
+.hero-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.35rem 0.9rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.18);
+    backdrop-filter: blur(8px);
+    color: #ffe067;
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+.hero-subtitle {
+    max-width: 620px;
+    margin-left: auto;
+    margin-right: auto;
+    color: white !important;
+    font-size: 1rem;
+}
+
+.hero-search-form {
+    max-width: 720px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* search wrapper + dropdown */
+.hero-search-wrapper {
+    position: relative;
+    display: flex;
+    align-items: stretch;
+    background-color: #ffffff;
+    border-radius: 999px;
+    padding: 0.2rem;
+    box-shadow: 0 18px 35px rgba(0, 0, 0, 0.35);
+    overflow: visible; /* allow dropdown to show */
+}
+
+.hero-search-input {
+    flex: 1;
+    border: none;
+    outline: none;
+    padding: 0.95rem 1.5rem;
+    font-size: 0.98rem;
+    border-radius: 999px 0 0 999px;
+}
+
+.hero-search-input::placeholder {
+    color: #9ca3af;
+}
+
+.hero-search-button {
+    border: none;
+    outline: none;
+    border-radius: 999px;
+    padding: 0 1.6rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #ff6a1a;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.1s ease;
+}
+
+.hero-search-button:hover {
+    background: #FFFF00;
+    transform: translateY(-1px);
+}
+
+.hero-search-icon {
+    width: 1.4rem;
+    height: 1.4rem;
+    fill: #ffffff;
+}
+
+/* dropdown box */
+.search-suggestions {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    margin-top: 4px;
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 18px 40px rgba(15, 23, 42, 0.25);
+    max-height: 260px;
+    overflow-y: auto;
+    z-index: 50;
+    display: none;
+}
+
+/* each suggestion */
+.search-suggestion-item {
+    padding: 0.55rem 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    cursor: pointer;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.search-suggestion-item:last-child {
+    border-bottom: none;
+}
+
+.search-suggestion-main {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #111827;
+}
+
+.search-suggestion-secondary {
+    font-size: 0.78rem;
+    color: #6b7280;
+}
+
+/* hover + keyboard active state */
+.search-suggestion-item:hover,
+.search-suggestion-item.active {
+    background: #fffbf5;
+}
+
+/* Mobile tweaks */
+@media (max-width: 767.98px) {
+    .hero-carousel,
+    .hero-carousel .carousel-inner,
+    .hero-carousel .carousel-item {
+        height: 80vh;
+    }
+
+    .hero-heading {
+        font-size: 2.1rem;
+    }
+
+    .hero-search-wrapper {
+        padding: 0.15rem;
+    }
+
+    .hero-search-button {
+        padding: 0 1.2rem;
+    }
+}
+
+/* ============= TRAVEL YOUR WAY ============= */
+.travel-your-way {
+    background-color: #ffefe0;
+}
+
+.tyw-title {
+    font-size: clamp(2rem, 3vw, 2.4rem);
+    font-weight: 700;
+    color: #111827;
+}
+
+.tyw-subtitle {
+    max-width: 640px;
+    margin-left: auto;
+    margin-right: auto;
+    font-size: 0.98rem;
+    color: #4b5563;
+}
+
+.tyw-card-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+}
+
+.tyw-card {
+    background-color: #ffffff;
+    border-radius: 24px;
+    padding: 1.75rem 1.5rem;
+    box-shadow: 0 14px 30px rgba(15, 23, 42, 0.08);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+    width: 100%;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, border 0.15s ease;
+    border: 1px solid transparent;
+}
+
+.tyw-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 18px 40px rgba(15, 23, 42, 0.16);
+}
+
+.tyw-card-active {
+    border-color: #ff6a1a;
+    box-shadow: 0 18px 40px rgba(249, 115, 22, 0.35);
+}
+
+.tyw-card-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    margin-bottom: 0.1rem;
+    color: #111827;
+}
+
+.tyw-card-text {
+    font-size: 0.9rem;
+    margin: 0;
+    color: #4b5563;
+    text-align: left;
+}
+
+.tyw-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    margin-bottom: 0.4rem;
+}
+
+.icon-adventure { background: #fff3e0; color: #f97316; }
+.icon-weekend   { background: #fff9db; color: #fbbf24; }
+.icon-nature    { background: #e8f9f0; color: #16a34a; }
+.icon-beach     { background: #e0f2fe; color: #2563eb; }
+.icon-spiritual { background: #fde7f1; color: #ec4899; }
+.icon-camping   { background: #fef3c7; color: #ea580c; }
+
+@media (max-width: 767.98px) {
+    .tyw-card {
+        align-items: center;
+        text-align: center;
+    }
+    .tyw-card-text {
+        text-align: center;
+    }
+}
+
+/* ============= WHY TREK WITH AORBO ============= */
+.why-trek {
+    background-color: #f3f6fb;
+}
+
+.why-title {
+    font-size: clamp(2.1rem, 3.4vw, 2.7rem);
+    font-weight: 700;
+    color: #111827;
+}
+
+.why-subtitle {
+    max-width: 720px;
+    margin-left: auto;
+    margin-right: auto;
+    font-size: 0.98rem;
+    color: #4b5563;
+}
+
+.why-card {
+    background-color: #ffffff;
+    border-radius: 24px;
+    padding: 1.9rem 1.8rem;
+    box-shadow: 0 18px 40px rgba(15, 23, 42, 0.12);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.7rem;
+    width: 100%;
+}
+
+.why-icon-circle {
+    width: 52px;
+    height: 52px;
+    border-radius: 999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    margin-bottom: 0.3rem;
+    background: #ffe9cc;
+    color: #f97316;
+}
+
+.why-card-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin: 0;
+    color: #111827;
+}
+
+.why-card-text {
+    font-size: 0.9rem;
+    margin: 0;
+    color: #4b5563;
+    text-align: left;
+}
+
+@media (max-width: 767.98px) {
+    .why-card {
+        align-items: center;
+        text-align: center;
+    }
+    .why-card-text {
+        text-align: center;
+    }
+}
+
+/* ============= RELATED TREKS BADGE HOVER (card_details.html) ============= */
+.related-trek-badge,
+.badge.bg-light.text-dark.border {
+    transition: background 0.25s, color 0.25s, border-color 0.25s;
+    cursor: pointer;
+}
+.related-trek-badge:hover,
+.badge.bg-light.text-dark.border:hover {
+    background: #ff6a1a !important;
+    color: #ffffff !important;
+    border-color: #ff6a1a !important;
+}
+</style>
+{% endblock %}
+
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    // ----- View More / View Less -----
+    const toggleBtn = document.getElementById("toggle-featured-treks");
+    if (toggleBtn) {
+        const extraCards = document.querySelectorAll(".extra-trek-card");
+        let expanded = false;
+
+        toggleBtn.addEventListener("click", function () {
+            expanded = !expanded;
+            extraCards.forEach(card => card.classList.toggle("d-none", !expanded));
+            toggleBtn.textContent = expanded ? "View Less" : "View More";
+
+            if (expanded) {
+                window.scrollTo({
+                    top: toggleBtn.offsetTop - 200,
+                    behavior: 'smooth'
+                });
+            }
+        });
+    }
+
+    // ----- Live search suggestions -----
+    const input = document.getElementById("hero-search-input");
+    const box = document.getElementById("search-suggestions");
+    if (!input || !box) return;
+
+    let currentIndex = -1;
+    let currentResults = [];
+
+    function clearSuggestions() {
+        box.innerHTML = "";
+        box.style.display = "none";
+        currentIndex = -1;
+        currentResults = [];
+    }
+
+    function renderSuggestions(results) {
+        currentResults = results;
+        if (!results.length) {
+            clearSuggestions();
+            return;
+        }
+        box.innerHTML = "";
+        results.forEach((item, idx) => {
+            const div = document.createElement("div");
+            div.className = "search-suggestion-item";
+            div.dataset.index = idx;
+
+            let secondary = "";
+            if (item.type === "point" && item.trek_name) {
+                secondary = `<span class="search-suggestion-secondary">Trek point · ${item.trek_name}</span>`;
+            } else if (item.type === "trek") {
+                secondary = `<span class="search-suggestion-secondary">Trek</span>`;
+            }
+
+            div.innerHTML = `
+                <span class="search-suggestion-main">${item.label}</span>
+                ${secondary}
+            `;
+
+            div.addEventListener("mousedown", function () {
+                window.location.href = item.url;
+            });
+
+            box.appendChild(div);
+        });
+        box.style.display = "block";
+    }
+
+    input.addEventListener("input", function () {
+        const q = this.value.trim();
+        if (!q) {
+            clearSuggestions();
+            return;
+        }
+
+        fetch(`{% url 'search_suggestions' %}?q=` + encodeURIComponent(q))
+            .then(res => res.json())
+            .then(data => {
+                renderSuggestions(data.results || []);
+            })
+            .catch(err => {
+                console.error("Suggestion error:", err);
+                clearSuggestions();
+            });
+    });
+
+    input.addEventListener("keydown", function (e) {
+        if (!currentResults.length) return;
+        const items = box.querySelectorAll(".search-suggestion-item");
+        if (!items.length) return;
+
+        if (e.key === "ArrowDown") {
+            e.preventDefault();
+            currentIndex = (currentIndex + 1) % items.length;
+        } else if (e.key === "ArrowUp") {
+            e.preventDefault();
+            currentIndex = (currentIndex - 1 + items.length) % items.length;
+        } else if (e.key === "Enter") {
+            if (currentIndex >= 0 && currentIndex < currentResults.length) {
+                e.preventDefault();
+                window.location.href = currentResults[currentIndex].url;
+            }
+            return;
+        } else if (e.key === "Escape") {
+            clearSuggestions();
+            return;
+        } else {
+            return;
+        }
+
+        items.forEach((el, idx) => {
+            el.classList.toggle("active", idx === currentIndex);
+        });
+    });
+
+    document.addEventListener("click", function (e) {
+        if (e.target !== input && !box.contains(e.target)) {
+            clearSuggestions();
+        }
+    });
+});
+</script>
+{% endblock %}
+
+
+
+{% comment %} 
+{# ================= 2. Featured Destinations ================= #}
+<section class="py-5 bg-light" id="featured-destinations">
+  <div class="container">
+    <h2 class="text-center mb-2">Featured Destinations</h2>
+
+    {% if selected_tag %}
+      <h5 class="text-center text-secondary mb-4">
+        Showing results for:
+        <span class="text-dark fw-bold">{{ selected_tag|title }}</span>
+        <a href="{% url 'home' %}#featured-destinations"
+           class="ms-2 small text-decoration-underline">
+          Reset
+        </a>
+      </h5>
+    {% else %}
+      <p class="text-center text-muted mb-4">
+        Explore our most loved treks and travel circuits across India.
+      </p>
+    {% endif %}
+
+    <div class="row g-4" id="featured-trek-grid">
+      {% for trek in featured_treks %}
+        <div class="col-12 col-sm-6 col-md-4 col-lg-3 featured-card
+                    {% if forloop.counter > 8 %} d-none extra-trek-card{% endif %}">
+          <div class="card h-100 border-0 shadow-sm rounded-4">
+            <div class="ratio ratio-4x3">
+              <img
+                src="{% static trek.image %}"
+                alt="{{ trek.name }}"
+                class="card-img-top object-fit-cover rounded-top-4"
+              >
+            </div>
+            <div class="card-body d-flex flex-column">
+              <h5 class="card-title mb-1">{{ trek.name }}</h5>
+              <p class="text-muted mb-2">📍 {{ trek.state }}</p>
+
+              {% if trek.duration_days %}
+                <p class="small mb-1">⏱ {{ trek.duration_days }}</p>
+              {% endif %}
+
+              {% if trek.operating_days %}
+                <p class="small mb-2">📅 {{ trek.operating_days }}</p>
+              {% endif %}
+
+              <p class="fw-semibold text-danger mb-3">
+                ₹{{ trek.price_start }} <span class="text-muted small">onwards</span>
+              </p>
+
+              <div class="mt-auto">
+                <a href="{% url 'card_trek_detail' trek.id %}"
+                   class="btn btn-warning w-100 fw-semibold">
+                  View
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      {% empty %}
+        <div class="col-12">
+          <p class="text-center text-muted">
+            No treks found for this filter. Try another travel style or
+            <a href="{% url 'home' %}#featured-destinations">reset filters</a>.
+          </p>
+        </div>
+      {% endfor %}
+    </div>
+
+    {% if featured_treks|length > 8 %}
+      <div class="text-center mt-4">
+        <button id="toggle-featured-treks" class="btn btn-outline-dark px-4 py-2 fw-semibold">
+          View More
+        </button>
+      </div>
+    {% endif %}
+  </div>
+</section> {% endcomment %}
