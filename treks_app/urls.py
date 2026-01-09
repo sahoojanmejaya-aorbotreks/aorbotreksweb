@@ -35,7 +35,7 @@ urlpatterns = [
     # Travel Your Way separate listing page
     path('travel-your-way/', views.travel_your_way, name='travel_your_way'),
 
-    # API endpoints
+    # # API endpoints
     path('api/contact/', views.contact_submit, name='contact_submit'),
 ]
 

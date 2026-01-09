@@ -12,7 +12,7 @@ from .models import (
     Contact, Blog, TrekCategory, TrekOrganizer, Trek, TrekImage,
     Testimonial, FAQ, SafetyTip, TeamMember, HomepageBanner,
     SocialMedia, ContactInfo, WhatsNew, TopTrek,
-    TrekList,Visitor, TermsAndConditions 
+    TrekList,Visitor, TermsAndConditions, Operator, Tag, TrekPoint 
 )   
 
 @admin.register(WhatsNew)
@@ -383,3 +383,19 @@ class TrekListAdmin(admin.ModelAdmin):
 
     image_preview.short_description = "Image Preview"
     hero_image_preview.short_description = "Hero Image Preview"
+
+@admin.register(Operator)
+class OperatorAdmin(admin.ModelAdmin):
+    list_display = ('name',)
+    search_fields = ('name',)
+
+@admin.register(Tag)
+class TagAdmin(admin.ModelAdmin):
+    list_display = ('name',)
+    search_fields = ('name',)
+
+@admin.register(TrekPoint)
+class TrekPointAdmin(admin.ModelAdmin):
+    list_display = ('name',)
+    search_fields = ('name',)
+
