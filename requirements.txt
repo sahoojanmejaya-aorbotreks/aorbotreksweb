@@ -13,4 +13,4 @@ django-axes
 bleach>=6.0.0
 python-magic
 django-ckeditor 
-
+requests

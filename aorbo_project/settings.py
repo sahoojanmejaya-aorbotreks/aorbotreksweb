@@ -35,7 +35,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = ["*"]  # allows all hosts for testing
 CSRF_TRUSTED_ORIGINS = [
-    "https://29230ffc29f2.ngrok-free.app",
+    "https://628e10d95398.ngrok-free.app",
     "https://aorbotreks.com",
     "https://www.aorbotreks.com",
 ]
@@ -232,7 +232,7 @@ CORS_ALLOWED_ORIGINS = [
     "https://www.aorbotreks.com",
     "http://localhost:8000",
     "http://127.0.0.1:8000",
-    "https://29230ffc29f2.ngrok-free.app"
+    "https://628e10d95398.ngrok-free.app"
 ]
 
 REST_FRAMEWORK = {
@@ -249,65 +249,229 @@ REST_FRAMEWORK = {
     }
 }
 
+# # CSP settings
+# CONTENT_SECURITY_POLICY = {
+#     'DIRECTIVES': {
+#         'base-uri': ("'self'",),
+#         'connect-src': (
+#             "'self'",
+#             'https://aorbotreks.com',
+#             'https://www.aorbotreks.com',
+#             "https://628e10d95398.ngrok-free.app"
+#         ),
+#         'default-src': (
+#             "'self'",
+#             "'unsafe-inline'",
+#             "'unsafe-eval'",
+#             "https://google.com",
+#             'https://fonts.googleapis.com',
+#             'https://fonts.gstatic.com',
+#             'https://cdn.jsdelivr.net',
+#             'https://aorbotreks.com',
+#             'https://www.aorbotreks.com',
+#             "https://628e10d95398.ngrok-free.app"
+#         ),
+#         'font-src': (
+#             "'self'",
+#             'https://fonts.gstatic.com',
+#             "https://google.com",
+#             'https://aorbotreks.com',
+#             'https://www.aorbotreks.com',
+#             "https://628e10d95398.ngrok-free.app"
+#         ),
+#         'form-action': ("'self'",),
+#         'frame-ancestors': ("'self'",),
+#         'img-src': (
+#             "'self'",
+#             'data:',
+#             'https://aorbotreks.com',
+#             'https://google.com',
+#             'https://www.aorbotreks.com',
+#             "https://xsconhhzyaiowokwsqne.supabase.co",
+#             "https://628e10d95398.ngrok-free.app"
+#         ),
+#         'object-src': ("'none'",),
+#         'script-src': (
+#             "'self'",
+#             "'unsafe-inline'",
+#             "'unsafe-eval'",
+#             'https://cdn.jsdelivr.net',
+#             'https://www.google.com',
+#             'https://www.gstatic.com',
+#             'https://aorbotreks.com',
+#             'https://www.aorbotreks.com',
+#             "https://628e10d95398.ngrok-free.app"
+#         ),
+#         'style-src': (
+#             "'self'",
+#             "'unsafe-inline'",
+#             'https://fonts.googleapis.com',
+#             'https://cdn.jsdelivr.net',
+#             'https://google.com',
+#             'https://www.gstatic.com',
+#             'https://aorbotreks.com',
+#             'https://www.aorbotreks.com',
+#             "https://628e10d95398.ngrok-free.app"
+#         ),
+#     }
+# }
 # CSP settings
 CONTENT_SECURITY_POLICY = {
     'DIRECTIVES': {
         'base-uri': ("'self'",),
+
         'connect-src': (
             "'self'",
             'https://aorbotreks.com',
             'https://www.aorbotreks.com',
-            "https://29230ffc29f2.ngrok-free.app"
+            "https://628e10d95398.ngrok-free.app",
+            # 🔽 added for reCAPTCHA / Google
+            'https://www.google.com',
+            'https://www.gstatic.com',
         ),
+
         'default-src': (
             "'self'",
             "'unsafe-inline'",
             "'unsafe-eval'",
+            "https://google.com",
             'https://fonts.googleapis.com',
             'https://fonts.gstatic.com',
             'https://cdn.jsdelivr.net',
             'https://aorbotreks.com',
             'https://www.aorbotreks.com',
-            "https://29230ffc29f2.ngrok-free.app"
+            "https://628e10d95398.ngrok-free.app"
         ),
+
         'font-src': (
             "'self'",
             'https://fonts.gstatic.com',
+            "https://google.com",
             'https://aorbotreks.com',
             'https://www.aorbotreks.com',
-            "https://29230ffc29f2.ngrok-free.app"
+            "https://628e10d95398.ngrok-free.app"
         ),
+
         'form-action': ("'self'",),
+
         'frame-ancestors': ("'self'",),
+
+        # 🔽 REQUIRED for reCAPTCHA iframe
+        'frame-src': (
+            "'self'",
+            'https://www.google.com',
+        ),
+
         'img-src': (
             "'self'",
             'data:',
             'https://aorbotreks.com',
+            'https://google.com',
             'https://www.aorbotreks.com',
             "https://xsconhhzyaiowokwsqne.supabase.co",
-            "https://29230ffc29f2.ngrok-free.app"
+            "https://628e10d95398.ngrok-free.app",
+            # 🔽 added
+            'https://www.gstatic.com',
         ),
+
         'object-src': ("'none'",),
+
         'script-src': (
             "'self'",
             "'unsafe-inline'",
             "'unsafe-eval'",
             'https://cdn.jsdelivr.net',
+            'https://www.google.com',
+            'https://www.gstatic.com',
             'https://aorbotreks.com',
             'https://www.aorbotreks.com',
-            "https://29230ffc29f2.ngrok-free.app"
+            "https://628e10d95398.ngrok-free.app"
         ),
+
+        # 🔽 REQUIRED for external Google scripts
+        'script-src-elem': (
+            "'self'",
+            'https://cdn.jsdelivr.net',
+            'https://www.google.com',
+            'https://www.gstatic.com',
+            'https://aorbotreks.com',
+            'https://www.aorbotreks.com',
+            "https://628e10d95398.ngrok-free.app"
+        ),
+
         'style-src': (
             "'self'",
             "'unsafe-inline'",
             'https://fonts.googleapis.com',
             'https://cdn.jsdelivr.net',
+            'https://google.com',
+            'https://www.gstatic.com',
             'https://aorbotreks.com',
             'https://www.aorbotreks.com',
-            "https://29230ffc29f2.ngrok-free.app"
+            "https://628e10d95398.ngrok-free.app"
         ),
     }
 }
+
+
+# CONTENT_SECURITY_POLICY = {
+#     "DIRECTIVES": {
+#         "default-src": (
+#             "'self'",
+#         ),
+
+#         "script-src": (
+#             "'self'",
+#             "'unsafe-inline'",
+#             "'unsafe-eval'",
+#             "https://cdn.jsdelivr.net",
+#             "https://www.google.com",
+#             "https://www.gstatic.com",
+#             "https://www.googletagmanager.com",
+#         ),
+
+#         "script-src-elem": (
+#             "'self'",
+#             "https://cdn.jsdelivr.net",
+#             "https://www.google.com",
+#             "https://www.gstatic.com",
+#             "https://www.googletagmanager.com",
+#         ),
+
+#         "connect-src": (
+#             "'self'",
+#             "https://www.google.com",
+#             "https://www.gstatic.com",
+#             "https://www.googletagmanager.com",
+#             "https://cdn.jsdelivr.net",
+#         ),
+
+#         "frame-src": (
+#             "'self'",
+#             "https://www.google.com",
+#         ),
+
+#         "img-src": (
+#             "'self'",
+#             "data:",
+#             "https://www.google.com",
+#             "https://www.gstatic.com",
+#         ),
+
+#         "font-src": (
+#             "'self'",
+#             "https://fonts.gstatic.com",
+#         ),
+
+#         "style-src": (
+#             "'self'",
+#             "'unsafe-inline'",
+#             "https://fonts.googleapis.com",
+#             "https://cdn.jsdelivr.net",
+#         ),
+#     }
+# }
+
 
 # Add localhost entries only in DEBUG mode
 if DEBUG:
@@ -317,3 +481,12 @@ if DEBUG:
 SIMPLE_JWT = {
     'TOKEN_OBTAIN_PAIR_SERIALIZER': 'aorbo_project.serializers.MyTokenObtainPairSerializer',
 }
+
+
+
+if DEBUG:
+    RECAPTCHA_SITE_KEY = "6LcC-EMsAAAAADQmEzaoaxCBKvNPXul5IkJfTdtY"
+    RECAPTCHA_SECRET_KEY = "6LcC-EMsAAAAACb56O7o2J3tG-aF6jPrncYrwzv1"
+else:
+    RECAPTCHA_SITE_KEY = "6Leb0z4sAAAAAIOdUq3ieM_rGxqcGq9x-vQbH-21"
+    RECAPTCHA_SECRET_KEY = "6Leb0z4sAAAAAO6--fw7gFvGW3DtiKPZG9CUTFwm"

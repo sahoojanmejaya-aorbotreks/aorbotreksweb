@@ -2247,11 +2247,6 @@ footer {
 }
 
 
-
-
-
-
-
 .whats-new .slide-content,
 .top-treks .slide-content,
 .testimonials .slide-content {
@@ -3104,87 +3099,4 @@ footer {
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
     margin-bottom: 2rem;
 }
-
-.contact-page .navbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1rem 5%;
-    max-width: 1400px;
-    margin: 0 auto;
-}
-
-.contact-page .logo {
-    display: flex;
-    align-items: center;
-}
-
-.contact-page .logo img {
-    height: 40px;
-    width: auto;
-}
-
-.contact-page .nav-links {
-    display: flex;
-    align-items: center;
-    list-style: none;
-    margin: 0;
-    padding: 0;
-}
-
-.contact-page .nav-links li {
-    margin: 0 1.25rem;
-}
-
-.contact-page .nav-links a {
-    color: #333;
-    text-decoration: none;
-    font-size: 1rem;
-    font-weight: 500;
-    transition: color 0.3s ease;
-}
-
-.contact-page .nav-links a:hover,
-.contact-page .nav-links a.active {
-    color: #007bff;
-}
-
-.contact-page .download-btn {
-    background: #FFFF00;
-    color: #333;
-    padding: 0.75rem 1.5rem;
-    border: none;
-    border-radius: 8px;
-    font-size: 1rem;
-    font-weight: 600;
-    text-decoration: none;
-    transition: all 0.3s ease;
-}
-
-.contact-page .download-btn:hover {
-    background: #FFFF00;
-    transform: translateY(-2px);
-}
-
-@media (max-width: 768px) {
-    .contact-page .navbar {
-        flex-direction: column;
-        padding: 1rem;
-        gap: 1rem;
-    }
-
-    .contact-page .nav-links {
-        flex-direction: column;
-        gap: 1rem;
-        width: 100%;
-    }
-
-    .contact-page .nav-links li {
-        margin: 0;
-    }
-
-    .contact-page .download-btn {
-        width: 100%;
-        text-align: center;
-    }
-}
+ 

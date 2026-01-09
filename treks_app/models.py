@@ -37,8 +37,7 @@ def validate_image_file_extension(value):
     valid_extensions = ['.jpg', '.jpeg', '.png', '.gif', '.svg', '.webp']
     if not ext.lower() in valid_extensions:
         raise ValidationError('Unsupported file extension. Allowed extensions are: ' + ', '.join(valid_extensions))
-
-    # For a more secure approach, use python-magic to check the actual MIME type
+    
     import magic
     try:
         mime_type = magic.from_buffer(value.read(1024), mime=True)
@@ -450,64 +449,6 @@ class TrekPoint(models.Model):
     name = models.CharField(max_length=200)
     def __str__(self): return self.name
 
-# class TrekList(models.Model):
-#     id = models.SlugField(primary_key=True)
-#     name = models.CharField(max_length=200)
-#     state = models.CharField(max_length=100, blank=True, null=True)
-#     image = models.CharField(max_length=500, blank=True, null=True)
-#     hero_image = models.CharField(max_length=500, blank=True, null=True)
-#     duration_days = models.CharField(max_length=100, blank=True, null=True)
-#     price_start = models.PositiveIntegerField(blank=True, null=True)
-#     currency = models.CharField(max_length=10, default="INR")
-#     operating_days = models.CharField(max_length=200, blank=True, null=True)
-
-#     tags = models.ManyToManyField(Tag, blank=True)
-#     operators = models.ManyToManyField(Operator, blank=True)
-#     trek_points = models.ManyToManyField(TrekPoint, blank=True)
-
-#     short_desc = models.TextField(blank=True, null=True)
-#     highlights = models.TextField(blank=True, null=True)  # or JSONField if highlights are structured
-#     activities = models.TextField(blank=True, null=True)  # OR ManyToMany to Activity model if you prefer
-#     related_treks = models.ManyToManyField('self', blank=True)
-
-#     created_at = models.DateTimeField(auto_now_add=True)
-
-#     def __str__(self): 
-#         return self.name
-
-# class TrekList(models.Model):
-#     id = models.SlugField(primary_key=True, editable=False)
-#     name = models.CharField(max_length=200)
-#     state = models.CharField(max_length=100, blank=True, null=True)
-#     image = models.CharField(max_length=500, blank=True, null=True)
-#     hero_image = models.CharField(max_length=500, blank=True, null=True)
-#     duration_days = models.CharField(max_length=100, blank=True, null=True)
-#     price_start = models.PositiveIntegerField(blank=True, null=True)
-#     currency = models.CharField(max_length=10, default="INR")
-#     operating_days = models.CharField(max_length=200, blank=True, null=True)
-
-#     tags = models.ManyToManyField(Tag, blank=True)
-#     operators = models.ManyToManyField(Operator, blank=True)
-#     trek_points = models.ManyToManyField(TrekPoint, blank=True)
-
-#     short_desc = models.TextField(blank=True, null=True)
-#     highlights = models.TextField(blank=True, null=True)
-#     activities = models.TextField(blank=True, null=True)
-#     related_treks = models.ManyToManyField('self', blank=True)
-
-#     created_at = models.DateTimeField(auto_now_add=True)
-
-#     def save(self, *args, **kwargs):
-#         if not self.id:
-#             self.id = slugify(self.name)
-#         super().save(*args, **kwargs)
-
-#     def __str__(self):
-#         return self.name
-
-from django.db import models
-from django.utils.text import slugify
-
 class TrekList(models.Model):
     id = models.SlugField(primary_key=True, editable=False)
     name = models.CharField(max_length=200)
@@ -546,24 +487,7 @@ class TrekList(models.Model):
 
     def __str__(self):
         return self.name
-
-    
-# class TrekImage(models.Model):
-#     trek = models.ForeignKey(
-#         TrekList,
-#         related_name="images",
-#         on_delete=models.CASCADE
-#     )
-#     image = models.ImageField(
-#         upload_to="trek_images/",
-#         validators=[validate_image_file_extension]
-#     )
-#     caption = models.CharField(max_length=200, blank=True)
-
-#     def __str__(self):
-#         return self.caption or f"{self.trek.name} - Image {self.id}"
-
-
+ 
 class TrekImage(models.Model):
     trek = models.ForeignKey(
         TrekList,

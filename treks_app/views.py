@@ -12,9 +12,8 @@ from django.core.mail import send_mail, EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 from datetime import datetime
-
-
-
+import requests
+from django.conf import settings
 
 @api_view(['POST'])
 @throttle_classes([AnonRateThrottle, UserRateThrottle])
@@ -55,6 +54,7 @@ def contact_submit(request):
         return JsonResponse({'error': 'Invalid JSON data'}, status=400)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
+    
 from .models import (
     Contact, Blog, TrekCategory, TrekOrganizer, Trek, 
     Testimonial, FAQ, SafetyTip, TeamMember, HomepageBanner,
@@ -202,29 +202,239 @@ def safety(request):
     }
     return render(request, 'safety.html', context)
 
-def contact(request):
-    if request.method == "GET":
-        return render(request, "contact.html")
+# def contact(request):
+#     if request.method == "GET":
+#         return render(request, "contact.html")
 
-    # POST → handle form submit
+#     # POST → handle form submit
+#     if request.method != "POST":
+#         return JsonResponse({"error": "Invalid request"}, status=405)
+
+#     try:
+#         data = json.loads(request.body)
+
+#         name = data.get("name", "").strip()
+#         email_addr = data.get("email", "").strip()
+#         mobile = data.get("mobile", "").strip()
+#         user_type = data.get("userType", "").strip()
+#         message = data.get("comment", "").strip()
+
+#         if not all([name, email_addr, mobile, user_type, message]):
+#             return JsonResponse(
+#                 {"error": "Please fill all required fields ❌"},
+#                 status=400
+#             )
+
+#         admin_subject = f"New Contact Enquiry from {name}"
+#         admin_message = (
+#             f"Name: {name}\n"
+#             f"Email: {email_addr}\n"
+#             f"Mobile: {mobile}\n"
+#             f"I am a: {user_type}\n\n"
+#             f"Message:\n{message}"
+#         )
+
+#         # Send admin mail
+#         send_mail(
+#             subject=admin_subject,
+#             message=admin_message,
+#             from_email="Aorbo Treks <hello@aorbotreks.com>",  
+#             recipient_list=["hello@aorbotreks.com"],
+#             fail_silently=False,
+#         )
+
+
+#         # Auto-reply mail
+#         ctx = {
+#             "name": name,
+#             "email_addr": email_addr,   
+#             "current_year": datetime.now().year,
+#             "cta_url": "https://aorbotreks.com",
+#             "cta_label": "Visit Our Website",
+#         }
+
+#         html_content = render_to_string("treks_app/mail.html", ctx)
+#         text_content = strip_tags(html_content)
+
+#         reply = EmailMultiAlternatives(
+#             subject="Thank you for contacting us!",
+#             body=text_content,
+#             from_email="Aorbo Treks <hello@aorbotreks.com>",  
+#             to=[email_addr],
+#         )
+
+#         reply.attach_alternative(html_content, "text/html")
+#         reply.send()
+
+#         return JsonResponse({"message": "Message sent successfully ✅"})
+
+#     except Exception as e:
+#         return JsonResponse(
+#             {"error": f"Failed to submit form: {str(e)}"},
+#             status=500
+#         )
+
+# def contact(request):
+#     if request.method == "GET":
+#         return render(
+#             request,
+#             "contact.html",
+#             {
+#                 "RECAPTCHA_SITE_KEY": settings.RECAPTCHA_SITE_KEY
+#             }
+#         )
+#     if request.method != "POST":
+#         return JsonResponse({"error": "Invalid request"}, status=405)
+
+#     try:
+#         data = json.loads(request.body or "{}")
+
+#         name = data.get("name", "").strip()
+#         email_addr = data.get("email", "").strip()
+#         mobile = data.get("mobile", "").strip()
+#         user_type = data.get("userType", "").strip()
+#         message = data.get("comment", "").strip()
+#         recaptcha_token = data.get("recaptcha_token")
+#         if not all([name, email_addr, mobile, user_type, message, recaptcha_token]):
+#             return JsonResponse(
+#                 {"error": "Please fill all required fields ❌"},
+#                 status=400
+#             )
+#         recaptcha_response = requests.post(
+#             "https://www.google.com/recaptcha/api/siteverify",
+#             data={
+#                 "secret": settings.RECAPTCHA_SECRET_KEY,
+#                 "response": recaptcha_token
+#             },
+#             timeout=5
+#         )
+
+#         recaptcha_result = recaptcha_response.json()
+
+#         if (
+#             not recaptcha_result.get("success")
+#             or recaptcha_result.get("score", 0) < 0.5
+#         ):
+#             return JsonResponse(
+#                 {"error": "reCAPTCHA verification failed ❌"},
+#                 status=400
+#             )
+
+#         admin_subject = f"New Contact Enquiry from {name}"
+#         admin_message = (
+#             f"Name: {name}\n"
+#             f"Email: {email_addr}\n"
+#             f"Mobile: {mobile}\n"
+#             f"I am a: {user_type}\n\n"
+#             f"Message:\n{message}"
+#         )
+
+#         send_mail(
+#             subject=admin_subject,
+#             message=admin_message,
+#             from_email="Aorbo Treks <hello@aorbotreks.com>",
+#             recipient_list=["hello@aorbotreks.com"],
+#             fail_silently=False,
+#         )
+#         ctx = {
+#             "name": name,
+#             "email_addr": email_addr,
+#             "current_year": datetime.now().year,
+#             "cta_url": "https://aorbotreks.com",
+#             "cta_label": "Visit Our Website",
+#         }
+
+#         html_content = render_to_string("treks_app/mail.html", ctx)
+#         text_content = strip_tags(html_content)
+
+#         reply = EmailMultiAlternatives(
+#             subject="Thank you for contacting us!",
+#             body=text_content,
+#             from_email="Aorbo Treks <hello@aorbotreks.com>",
+#             to=[email_addr],
+#         )
+#         reply.attach_alternative(html_content, "text/html")
+#         reply.send()
+#         return JsonResponse({"success": True})
+
+#     except json.JSONDecodeError:
+#         return JsonResponse(
+#             {"error": "Invalid JSON payload ❌"},
+#             status=400
+#         )
+
+#     except Exception as e:
+#         return JsonResponse(
+#             {"error": f"Failed to submit form: {str(e)}"},
+#             status=500
+#         )
+
+from django.http import JsonResponse
+from django.shortcuts import render
+from django.conf import settings
+from django.core.mail import send_mail, EmailMultiAlternatives
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
+from datetime import datetime
+import json
+import requests
+
+
+def contact(request):
+    # -------- GET --------
+    if request.method == "GET":
+        return render(
+            request,
+            "contact.html",
+            {"RECAPTCHA_SITE_KEY": settings.RECAPTCHA_SITE_KEY},
+        )
+
+    # -------- ONLY POST --------
     if request.method != "POST":
         return JsonResponse({"error": "Invalid request"}, status=405)
 
     try:
-        data = json.loads(request.body)
+        data = json.loads(request.body or "{}")
 
         name = data.get("name", "").strip()
         email_addr = data.get("email", "").strip()
         mobile = data.get("mobile", "").strip()
         user_type = data.get("userType", "").strip()
         message = data.get("comment", "").strip()
+        recaptcha_token = data.get("recaptcha_token")
 
-        if not all([name, email_addr, mobile, user_type, message]):
+        # -------- Basic validation --------
+        if not all([name, email_addr, mobile, user_type, message, recaptcha_token]):
             return JsonResponse(
                 {"error": "Please fill all required fields ❌"},
                 status=400
             )
 
+        # -------- Verify reCAPTCHA --------
+        recaptcha_response = requests.post(
+            "https://www.google.com/recaptcha/api/siteverify",
+            data={
+                "secret": settings.RECAPTCHA_SECRET_KEY,
+                "response": recaptcha_token,
+                "remoteip": request.META.get("REMOTE_ADDR"),
+            },
+            timeout=5,
+        )
+
+        recaptcha_result = recaptcha_response.json()
+
+        # -------- HARD FAIL CONDITIONS --------
+        if (
+            not recaptcha_result.get("success")
+            or recaptcha_result.get("score", 0) < 0.7
+            or recaptcha_result.get("action") != "contact_form"
+        ):
+            return JsonResponse(
+                {"error": "reCAPTCHA verification failed ❌"},
+                status=400
+            )
+
+        # -------- Admin email --------
         admin_subject = f"New Contact Enquiry from {name}"
         admin_message = (
             f"Name: {name}\n"
@@ -234,20 +444,18 @@ def contact(request):
             f"Message:\n{message}"
         )
 
-        # Send admin mail
         send_mail(
             subject=admin_subject,
             message=admin_message,
-            from_email="Aorbo Treks <hello@aorbotreks.com>",  
+            from_email="Aorbo Treks <hello@aorbotreks.com>",
             recipient_list=["hello@aorbotreks.com"],
             fail_silently=False,
         )
 
-
-        # Auto-reply mail
+        # -------- User auto-reply --------
         ctx = {
             "name": name,
-            "email_addr": email_addr,   
+            "email_addr": email_addr,
             "current_year": datetime.now().year,
             "cta_url": "https://aorbotreks.com",
             "cta_label": "Visit Our Website",
@@ -259,21 +467,26 @@ def contact(request):
         reply = EmailMultiAlternatives(
             subject="Thank you for contacting us!",
             body=text_content,
-            from_email="Aorbo Treks <hello@aorbotreks.com>",  
+            from_email="Aorbo Treks <hello@aorbotreks.com>",
             to=[email_addr],
         )
-
         reply.attach_alternative(html_content, "text/html")
         reply.send()
 
-        return JsonResponse({"message": "Message sent successfully ✅"})
+        return JsonResponse({"success": True})
+
+    except json.JSONDecodeError:
+        return JsonResponse(
+            {"error": "Invalid JSON payload ❌"},
+            status=400
+        )
 
     except Exception as e:
         return JsonResponse(
             {"error": f"Failed to submit form: {str(e)}"},
             status=500
         )
-    
+
     
 def privacy_policy(request):
     return render(request, 'privacypolicy.html')

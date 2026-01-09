@@ -142,13 +142,18 @@
                     </div>
 
                     <!-- Email -->
-                    <div class="mb-2">
+                   <div class="mb-2">
                         <label for="email" class="form-label">Email</label>
-                        <input type="email" class="form-control" id="email" name="email"
-                            pattern="^[a-zA-Z0-9._%+-]+@gmail\.com$"
-                            title="Enter a valid Gmail address (example@gmail.com)" required>
-                        <div class="invalid-feedback">Enter a valid Gmail address.</div>
+                        <input
+                            type="email"
+                            class="form-control"
+                            id="email"
+                            name="email"
+                            required
+                        >
+                        <div class="invalid-feedback">Enter a valid email address.</div>
                     </div>
+
 
                     <!-- Mobile -->
                     <div class="mb-2">
@@ -300,46 +305,14 @@
 </main>
 {% endblock %}
 {% block extra_js %}
+
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const contactForm = document.getElementById('contactForm');
     const formMessage = document.getElementById('form-message');
     const emailField = document.getElementById('email');
 
-    function showMessage(message, isError = false) {
-        if (isError) {
-            formMessage.innerHTML = message;
-            formMessage.className = 'alert alert-danger';
-        } else {
-            formMessage.innerHTML = `
-                <div class="d-flex flex-column align-items-center">
-                    <p class="mb-2">${message}</p>
-                    <button id="ok-btn" class="btn btn-success btn-sm">OK</button>
-                </div>
-            `;
-            formMessage.className = 'alert alert-success text-center';
-
-            setTimeout(() => {
-                const okBtn = document.getElementById("ok-btn");
-                if (okBtn) {
-                    okBtn.addEventListener("click", () => location.reload());
-                }
-            }, 50);
-        }
-        formMessage.style.display = 'block';
-    }
-
-    // 🔹 Live Gmail validation
-    emailField.addEventListener('input', function () {
-        const email = emailField.value.trim().toLowerCase();
-        emailField.setCustomValidity(
-            email && !email.endsWith("@gmail.com")
-                ? "Only Gmail addresses ending with @gmail.com are allowed."
-                : ""
-        );
-    });
-
-    contactForm.addEventListener('submit', async function (e) {
+    contactForm.addEventListener('submit', function (e) {
         e.preventDefault();
 
         if (!contactForm.checkValidity()) {
@@ -347,167 +320,63 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        function getCookie(name) {
-            let cookieValue = null;
-            if (document.cookie) {
-                document.cookie.split(';').forEach(cookie => {
-                    cookie = cookie.trim();
-                    if (cookie.startsWith(name + '=')) {
-                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        grecaptcha.ready(function () {
+            grecaptcha.execute('{{ RECAPTCHA_SITE_KEY }}', { action: 'contact_form' })
+                .then(async function (token) {
+
+                    function getCookie(name) {
+                        let cookieValue = null;
+                        if (document.cookie) {
+                            document.cookie.split(';').forEach(cookie => {
+                                cookie = cookie.trim();
+                                if (cookie.startsWith(name + '=')) {
+                                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                                }
+                            });
+                        }
+                        return cookieValue;
+                    }
+
+                    const csrftoken = getCookie('csrftoken');
+
+                    const formData = {
+                        name: document.getElementById('name').value,
+                        email: emailField.value,
+                        mobile: document.getElementById('mobile').value,
+                        userType: document.getElementById('userType').value,
+                        comment: document.getElementById('comment').value,
+                        recaptcha_token: token   // ✅ IMPORTANT
+                    };
+
+                    try {
+                        const response = await fetch('{% url "contact" %}', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRFToken': csrftoken
+                            },
+                            body: JSON.stringify(formData)
+                        });
+
+                        const result = await response.json();
+
+                        if (response.ok) {
+                            formMessage.className = 'alert alert-success';
+                            formMessage.innerHTML = "✅ Thank you! Your message has been sent successfully.";
+                            formMessage.style.display = 'block';
+                            contactForm.reset();
+                        } else {
+                            throw new Error(result.error || "Submission failed");
+                        }
+                    } catch (error) {
+                        formMessage.className = 'alert alert-danger';
+                        formMessage.innerHTML = "❌ Verification failed. Please try again.";
+                        formMessage.style.display = 'block';
                     }
                 });
-            }
-            return cookieValue;
-        }
-
-        const csrftoken = getCookie('csrftoken');
-
-        const formData = {
-            name: document.getElementById('name').value,
-            email: emailField.value,
-            mobile: document.getElementById('mobile').value,
-            userType: document.getElementById('userType').value,
-            comment: document.getElementById('comment').value
-        };
-
-        try {
-            const response = await fetch('{% url "contact" %}', {   // ✅ FIXED HERE
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': csrftoken
-                },
-                body: JSON.stringify(formData)
-            });
-
-            const result = await response.json();
-
-            if (response.ok) {
-                showMessage('✅ Thank you! Your message has been sent successfully.');
-                contactForm.reset();
-                contactForm.classList.remove('was-validated');
-            } else {
-                showMessage('❌ Error: ' + result.error, true);
-            }
-        } catch (error) {
-            console.error(error);
-            showMessage('❌ Error submitting form. Please try again.', true);
-        }
+        });
     });
 });
 </script>
 
-{% comment %} <script>
-document.addEventListener('DOMContentLoaded', function () {
-    const contactForm = document.getElementById('contactForm');
-    const formMessage = document.getElementById('form-message');
-    const emailField = document.getElementById('email');
-
-    function showMessage(message, isError = false) {
-        if (isError) {
-            // ❌ Error message (normal alert)
-            formMessage.innerHTML = message;
-            formMessage.className = 'alert alert-danger';
-        } else {
-            // ✅ Success message with OK button
-            formMessage.innerHTML = `
-                <div class="d-flex flex-column align-items-center">
-                    <p class="mb-2">${message}</p>
-                    <button id="ok-btn" class="btn btn-success btn-sm">OK</button>
-                </div>
-            `;
-            formMessage.className = 'alert alert-success text-center';
-            
-            // Add event listener for OK button
-            setTimeout(() => {
-                const okBtn = document.getElementById("ok-btn");
-                if (okBtn) {
-                    okBtn.addEventListener("click", () => {
-                        location.reload(); // 🔄 Refresh page
-                    });
-                }
-            }, 50);
-        }
-        formMessage.style.display = 'block';
-    }
-
-    // 🔹 Live Gmail validation
-    emailField.addEventListener('input', function () {
-        const email = emailField.value.trim().toLowerCase();
-        if (email && !email.endsWith("@gmail.com")) {
-            emailField.setCustomValidity("Only Gmail addresses ending with @gmail.com are allowed.");
-        } else {
-            emailField.setCustomValidity(""); // ✅ clear error
-        }
-    });
-
-    contactForm.addEventListener('submit', async function (e) {
-        e.preventDefault();
-
-        // Custom validation (Bootstrap)
-        if (!contactForm.checkValidity()) {
-            contactForm.classList.add('was-validated'); 
-
-            // 🔹 Scroll to the first invalid field
-            const firstInvalid = contactForm.querySelector(':invalid');
-            if (firstInvalid) {
-                firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                firstInvalid.focus();
-            }
-            return;
-        }
-
-        // CSRF Token
-        function getCookie(name) {
-            let cookieValue = null;
-            if (document.cookie && document.cookie !== '') {
-                const cookies = document.cookie.split(';');
-                for (let i = 0; i < cookies.length; i++) {
-                    const cookie = cookies[i].trim();
-                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                        break;
-                    }
-                }
-            }
-            return cookieValue;
-        }
-        const csrftoken = getCookie('csrftoken');
-
-        const formData = {
-            name: document.getElementById('name').value,
-            email: emailField.value,
-            mobile: document.getElementById('mobile').value,
-            userType: document.getElementById('userType').value,
-            comment: document.getElementById('comment').value
-        };
-
-        try {
-            const response = await fetch('{% url "contact_submit" %}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': csrftoken
-                },
-                body: JSON.stringify(formData)
-            });
-
-            const result = await response.json();
-
-            if (response.ok) {
-                showMessage('✅ Thank you! Your message has been sent successfully.');
-                contactForm.reset();
-                contactForm.classList.remove('was-validated');
-            } else {
-                showMessage('❌ Error: ' + result.error, true);
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            showMessage('❌ Error submitting form. Please try again.', true);
-        }
-    });
-});
-</script> {% endcomment %}
 {% endblock %}
-
-
